@@ -33,4 +33,4 @@ bin
 *.bak
 
 # 通信設定
-/communication.properties
+src/main/resources/communication.properties
