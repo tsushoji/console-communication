@@ -31,3 +31,6 @@ bin
 *.log
 *.swp
 *.bak
+
+# 通信設定
+/communication.properties

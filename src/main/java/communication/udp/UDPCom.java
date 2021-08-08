@@ -6,6 +6,8 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 
+import communication.Console;
+
 public class UDPCom {
 
   private static int receiveCount = 1;
@@ -32,7 +34,9 @@ public class UDPCom {
       DatagramPacket packet = new DatagramPacket(receivedData, receivedData.length);
       socket.receive(packet);
       System.out.println(
-          receiveCount++ + "-UDP通信受信文字列:" + new String(Arrays.copyOf(packet.getData(), packet.getLength()), "UTF-8"));
+          receiveCount++ +
+          "-UDP通信受信文字列:" +
+          new String(Arrays.copyOf(packet.getData(), packet.getLength()), "UTF-8"));
     } catch (IOException e) {
       e.printStackTrace();
       return false;
@@ -42,9 +46,12 @@ public class UDPCom {
 
   public boolean send(String IPAddres, int port, byte[] sendData) {
     try (DatagramSocket socket = new DatagramSocket()) {
-      DatagramPacket packet = new DatagramPacket(sendData, sendData.length, new InetSocketAddress(IPAddres, port));
+      DatagramPacket packet = new DatagramPacket(sendData,
+                                                  sendData.length,
+                                                  new InetSocketAddress(IPAddres, port));
       socket.send(packet);
-      System.out.println(sendCount++ + "-UDP通信送信文字列:" + sendData);
+      System.out.println(sendCount++ + "-UDP通信送信文字列:");
+      Console.getInstance().println(sendData);
     } catch (IOException e) {
       e.printStackTrace();
       return false;
