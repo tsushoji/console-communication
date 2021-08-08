@@ -5,15 +5,32 @@ import java.util.ResourceBundle;
 import java.util.Scanner;
 
 import communication.udp.UDPCom;
+import communication.udp.UDPComMulticast;
 
 public class Main {
 
   public static void main(String[] args) {
     ResourceBundle rb = ResourceBundle.getBundle("communication");
-    UDPComInputStr(rb.getString("udp.send.addres"),
-                     Integer.parseInt(rb.getString("udp.send.port")),
-                     Integer.parseInt(rb.getString("udp.receive.port")),
-                     1024);
+
+    String comType = "1";
+    switch(comType) {
+      case "0":
+        UDPComInputStr(rb.getString("udp.send.addres"),
+                         Integer.parseInt(rb.getString("udp.send.port")),
+                         Integer.parseInt(rb.getString("udp.receive.port")),
+                         1024);
+        break;
+
+      case "1":
+        UDPComMulticastInputStr(rb.getString("udp.multicast.addres"),
+                                    Integer.parseInt(rb.getString("udp.multicast.port")),
+                                    1024);
+        break;
+      default:
+        System.out.println("通信タイプ対象外");
+        break;
+    }
+    
   }
 
   private static void UDPComInputStr(String IPAddres,
@@ -37,5 +54,23 @@ public class Main {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  private static void UDPComMulticastInputStr(String MulticastAddres,
+                                                 int Port,
+                                                 int receivedDataSize) {
+    try (Scanner scan = new Scanner(System.in);){
+      String inputStr = scan.nextLine();
+      System.out.println("-定周期で送信する文字列:" + inputStr);
+      UDPComMulticast com = new UDPComMulticast();
+      byte[] sendData = inputStr.getBytes("UTF-8");
+      if(inputStr.matches("[+-]?\\d*(\\.\\d+)?")) {
+        sendData = ByteBuffer.wrap(new byte[4]).putInt(Integer.parseInt(inputStr)).array();
+      }
+      com.coonect(MulticastAddres, Port, sendData, receivedDataSize);
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+
   }
 }
