@@ -12,15 +12,17 @@ public class UDPComMulticast {
 
   private static int receiveCount = 1;
   private static int sendCount = 1;
+  private static long scheduledSendSleepTime = 3000;
   MulticastSocket socket;
   InetAddress group;
 
   public boolean coonect(String MultiAddres,
-                           int port,
+                           int sendPort,
+                           int receivePort,
                            byte[] sendData,
                            int receivedDataSize) {
     try {
-      socket = new MulticastSocket(port);
+      socket = new MulticastSocket(receivePort);
       group = InetAddress.getByName(MultiAddres);
       socket.joinGroup(group);
       socket.setLoopbackMode(false);
@@ -32,7 +34,7 @@ public class UDPComMulticast {
       }).start();
       new Thread(new Runnable() {
         public void run() {
-          startSendTask(sendData, port);
+          startSendTask(sendData, sendPort);
         }
       }).start();
     } catch (IOException e) {
@@ -51,7 +53,10 @@ public class UDPComMulticast {
 
   private void startSendTask(byte[] sendData, int port) {
     while (true) {
-      send(sendData, port);
+      try {
+        send(sendData, port);
+        Thread.sleep(scheduledSendSleepTime);
+      } catch (InterruptedException e) {}
     }
   }
 

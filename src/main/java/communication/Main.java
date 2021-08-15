@@ -23,7 +23,8 @@ public class Main {
 
       case "1":
         UDPComMulticastInputStr(rb.getString("udp.multicast.addres"),
-                                    Integer.parseInt(rb.getString("udp.multicast.port")),
+                                    Integer.parseInt(rb.getString("udp.multicast.send.port")),
+                                    Integer.parseInt(rb.getString("udp.multicast.receive.port")),
                                     1024);
         break;
       default:
@@ -57,7 +58,8 @@ public class Main {
   }
 
   private static void UDPComMulticastInputStr(String MulticastAddres,
-                                                 int Port,
+                                                 int sendPort,
+                                                 int receivePort,
                                                  int receivedDataSize) {
     try (Scanner scan = new Scanner(System.in);){
       String inputStr = scan.nextLine();
@@ -67,7 +69,7 @@ public class Main {
       if(inputStr.matches("[+-]?\\d*(\\.\\d+)?")) {
         sendData = ByteBuffer.wrap(new byte[4]).putInt(Integer.parseInt(inputStr)).array();
       }
-      com.coonect(MulticastAddres, Port, sendData, receivedDataSize);
+      com.coonect(MulticastAddres, sendPort, receivePort, sendData, receivedDataSize);
     } catch(Exception e) {
       e.printStackTrace();
     }
