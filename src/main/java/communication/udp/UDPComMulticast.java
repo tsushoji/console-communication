@@ -10,17 +10,20 @@ import communication.Console;
 
 public class UDPComMulticast {
 
+  private static final long SCHEDULED_SEND_SLEEP_TIME = 3000;
+  private static final int MAX_RECEIVED_DATA_SIZE = 1024;
   private static int receiveCount = 1;
   private static int sendCount = 1;
   MulticastSocket socket;
   InetAddress group;
 
   public boolean coonect(String MultiAddres,
-                           int port,
+                           int sendPort,
+                           int receivePort,
                            byte[] sendData,
                            int receivedDataSize) {
     try {
-      socket = new MulticastSocket(port);
+      socket = new MulticastSocket(receivePort);
       group = InetAddress.getByName(MultiAddres);
       socket.joinGroup(group);
       socket.setLoopbackMode(false);
@@ -30,9 +33,10 @@ public class UDPComMulticast {
           startReceiveTask(receivedDataSize);
         }
       }).start();
+      System.out.println("非同期送信タスク開始");
       new Thread(new Runnable() {
         public void run() {
-          startSendTask(sendData, port);
+          startSendTask(sendData, sendPort);
         }
       }).start();
     } catch (IOException e) {
@@ -51,19 +55,27 @@ public class UDPComMulticast {
 
   private void startSendTask(byte[] sendData, int port) {
     while (true) {
-      send(sendData, port);
+      try {
+        send(sendData, port);
+        Thread.sleep(SCHEDULED_SEND_SLEEP_TIME);
+      } catch (InterruptedException e) {}
     }
   }
 
-  private boolean receive(byte[] receivedData) {
+  private boolean receive(byte[] data) {
     try {
-      
-      DatagramPacket packet = new DatagramPacket(receivedData, receivedData.length);
+      DatagramPacket packet = new DatagramPacket(data, data.length);
       socket.receive(packet);
-      System.out.println(
-          receiveCount++ +
-          "-UDP通信受信文字列:" +
-          new String(Arrays.copyOf(packet.getData(), packet.getLength()), "UTF-8"));
+      int packetSize = packet.getLength();
+      if(packetSize > 0 && packetSize <= MAX_RECEIVED_DATA_SIZE) {
+        byte[] receivedData = packet.getData();
+        System.out.println(
+            receiveCount +
+            "-UDP通信受信文字列:" +
+            new String(Arrays.copyOf(receivedData, packetSize), "UTF-8"));
+        System.out.println(receiveCount++ + "-UDP通信受信バイナリーデータ:");
+        Console.getInstance().println(receivedData);
+      }
     } catch (IOException e) {
       e.printStackTrace();
       return false;
@@ -78,7 +90,7 @@ public class UDPComMulticast {
                                                   group,
                                                   port);
       socket.send(packet);
-      System.out.println(sendCount++ + "-UDP通信送信文字列:");
+      System.out.println(sendCount++ + "-UDP通信送信バイナリーデータ:");
       Console.getInstance().println(sendData);
     } catch (IOException e) {
       e.printStackTrace();
