@@ -10,10 +10,10 @@ import communication.Console;
 
 public class UDPComMulticast {
 
+  private static final long SCHEDULED_SEND_SLEEP_TIME = 3000;
   private static final int MAX_RECEIVED_DATA_SIZE = 1024;
   private static int receiveCount = 1;
   private static int sendCount = 1;
-  private static long scheduledSendSleepTime = 3000;
   MulticastSocket socket;
   InetAddress group;
 
@@ -57,7 +57,7 @@ public class UDPComMulticast {
     while (true) {
       try {
         send(sendData, port);
-        Thread.sleep(scheduledSendSleepTime);
+        Thread.sleep(SCHEDULED_SEND_SLEEP_TIME);
       } catch (InterruptedException e) {}
     }
   }
