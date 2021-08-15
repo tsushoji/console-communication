@@ -10,6 +10,7 @@ import communication.Console;
 
 public class UDPCom {
 
+  private static final int MAX_RECEIVED_DATA_SIZE = 1024;
   private static int receiveCount = 1;
   private static int sendCount = 1;
 
@@ -30,13 +31,20 @@ public class UDPCom {
 
   private boolean receive(int port, int dataSize) {
     try (DatagramSocket socket = new DatagramSocket(port)) {
-      byte[] receivedData = new byte[dataSize];
-      DatagramPacket packet = new DatagramPacket(receivedData, receivedData.length);
+      byte[] data = new byte[dataSize];
+      DatagramPacket packet = new DatagramPacket(data, data.length);
       socket.receive(packet);
-      System.out.println(
-          receiveCount++ +
-          "-UDP通信受信文字列:" +
-          new String(Arrays.copyOf(packet.getData(), packet.getLength()), "UTF-8"));
+      int packetSize = packet.getLength();
+      if(packetSize > 0 && packetSize <= MAX_RECEIVED_DATA_SIZE ) {
+        byte[] receivedData = packet.getData();
+        System.out.println(
+            receiveCount +
+            "-UDP通信受信文字列:" +
+            new String(Arrays.copyOf(receivedData, packetSize), "UTF-8"));
+        System.out.println(receiveCount++ + "-UDP通信受信バイナリーデータ:");
+        Console.getInstance().println(receivedData);
+      }
+
     } catch (IOException e) {
       e.printStackTrace();
       return false;
@@ -50,7 +58,7 @@ public class UDPCom {
                                                   sendData.length,
                                                   new InetSocketAddress(IPAddres, port));
       socket.send(packet);
-      System.out.println(sendCount++ + "-UDP通信送信文字列:");
+      System.out.println(sendCount++ + "-UDP通信送信バイナリーデータ:");
       Console.getInstance().println(sendData);
     } catch (IOException e) {
       e.printStackTrace();

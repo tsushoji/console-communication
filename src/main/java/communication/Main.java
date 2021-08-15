@@ -12,7 +12,7 @@ public class Main {
   public static void main(String[] args) {
     ResourceBundle rb = ResourceBundle.getBundle("communication");
 
-    String comType = "1";
+    String comType = "0";
     switch(comType) {
       case "0":
         UDPComInputStr(rb.getString("udp.send.addres"),
@@ -44,7 +44,7 @@ public class Main {
     try (Scanner scan = new Scanner(System.in);) {
       while (scan.hasNext()) {
         String inputStr = scan.nextLine();
-        System.out.println(inputStrCount++ + "-コンソール送信文字列:" + inputStr);
+        System.out.println(inputStrCount++ + "-UDP通信送信文字列:" + inputStr);
         com.send(IPAddres, sendPort, inputStr.getBytes("UTF-8"));
         if(inputStr.matches("[+-]?\\d*(\\.\\d+)?")) {
           com.send(IPAddres,
@@ -63,7 +63,7 @@ public class Main {
                                                  int receivedDataSize) {
     try (Scanner scan = new Scanner(System.in);){
       String inputStr = scan.nextLine();
-      System.out.println("-定周期で送信する文字列:" + inputStr);
+      System.out.println("-定周期UDP通信送信文字列:" + inputStr);
       UDPComMulticast com = new UDPComMulticast();
       byte[] sendData = inputStr.getBytes("UTF-8");
       if(inputStr.matches("[+-]?\\d*(\\.\\d+)?")) {
