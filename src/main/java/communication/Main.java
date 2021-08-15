@@ -1,6 +1,7 @@
 package communication;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 
@@ -12,26 +13,49 @@ public class Main {
   public static void main(String[] args) {
     ResourceBundle rb = ResourceBundle.getBundle("communication");
 
-    String comType = "0";
-    switch(comType) {
-      case "0":
-        UDPComInputStr(rb.getString("udp.send.addres"),
-                         Integer.parseInt(rb.getString("udp.send.port")),
-                         Integer.parseInt(rb.getString("udp.receive.port")),
-                         1024);
-        break;
+    menuDisplay();
 
-      case "1":
-        UDPComMulticastInputStr(rb.getString("udp.multicast.addres"),
-                                    Integer.parseInt(rb.getString("udp.multicast.send.port")),
-                                    Integer.parseInt(rb.getString("udp.multicast.receive.port")),
-                                    1024);
-        break;
-      default:
-        System.out.println("通信タイプ対象外");
-        break;
+    try (Scanner scan = new Scanner(System.in);) {
+      while (scan.hasNext()) {
+        String inputMode = scan.nextLine();
+        System.out.println("-モード:" + inputMode);
+        switch(inputMode) {
+        case "0":
+          UDPComInputStr(rb.getString("udp.send.addres"),
+                           Integer.parseInt(rb.getString("udp.send.port")),
+                           Integer.parseInt(rb.getString("udp.receive.port")),
+                           1024);
+          break;
+
+        case "1":
+          UDPComMulticastInputStr(rb.getString("udp.multicast.addres"),
+                                      Integer.parseInt(rb.getString("udp.multicast.send.port")),
+                                      Integer.parseInt(rb.getString("udp.multicast.receive.port")),
+                                      1024);
+          break;
+
+        case "e":
+          System.out.println("終了いたします");
+          throw new Exception();
+
+        default:
+          System.out.println("通信タイプ対象外");
+          System.out.println("再度、操作したいモードを選んでください:");
+          break;
+        }
+      }
+    } catch (Exception e) {}
+  }
+
+  private static void menuDisplay() {
+    Map<String, String> operationMenuMap = Map.of(
+        "0", "UDP通信ユニキャスト",
+        "1", "UDP通信マルチキャスト定時送信あり",
+        "e", "終了");
+    System.out.println("操作したいモードを選んでください:");
+    for (Map.Entry<String, String> entry : operationMenuMap.entrySet()) {
+      System.out.println(entry.getKey() + " : " + entry.getValue());
     }
-    
   }
 
   private static void UDPComInputStr(String IPAddres,
