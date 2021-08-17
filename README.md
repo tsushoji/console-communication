@@ -14,3 +14,22 @@ udp.multicast.addres-マルチキャストアドレス
 udp.multicast.send.port-送信ポート  
 udp.multicast.send.port-受信ポート  
 
+2. コンソールアプリメニュー  
+・「操作したいモードを選んでください:」から以下モードを選択し、Enterキー。  
+0→ユニキャスト  
+※上記モード選択メニューに戻る場合、「#q」を入力し、Enterキー。  
+通信設定について、以下とする。  
+送信アドレス→1の「udp.send.addres」  
+送信ポート→1の「udp.send.port」  
+受信ポート→1の「udp.receive.port」  
+
+1→マルチキャスト  
+※定時送信あり  
+※上記モード選択メニューに戻る場合、「#q」を入力し、Enterキー。  
+通信設定について、以下とする。  
+マルチキャストアドレス→1の「udp.multicast.addres」  
+送信ポート→1の「udp.multicast.send.port」  
+受信ポート→1の「udp.multicast.send.port」  
+
+e→終了
+
