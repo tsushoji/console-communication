@@ -1,6 +1,7 @@
 package communication;
 
 import java.nio.ByteBuffer;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Scanner;
@@ -62,10 +63,11 @@ public class Main {
   }
 
   private static void menuDisplay() {
-    Map<String, String> operationMenuMap = Map.of(
-        "0", "UDP通信ユニキャスト",
-        "1", "UDP通信マルチキャスト定時送信あり",
-        "e", "終了");
+    Map<String, String> operationMenuMap = new LinkedHashMap<>();
+    operationMenuMap.put("0", "UDP通信ユニキャスト");
+    operationMenuMap.put("1", "UDP通信マルチキャスト定時送信あり");
+    operationMenuMap.put("e", "終了");
+
     System.out.println("操作したいモードを選んでください:");
     for (Map.Entry<String, String> entry : operationMenuMap.entrySet()) {
       System.out.println(entry.getKey() + " : " + entry.getValue());
