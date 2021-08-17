@@ -10,12 +10,21 @@ import communication.Console;
 
 public class UDPComMulticast {
 
-  private static final long SCHEDULED_SEND_SLEEP_TIME = 3000;
+  private static final long SCHEDULED_SEND_SLEEP_TIME = 15000;
   private static final int MAX_RECEIVED_DATA_SIZE = 1024;
+  private static final UDPComMulticast INSTANCE = new UDPComMulticast();
   private static int receiveCount = 1;
   private static int sendCount = 1;
   MulticastSocket socket;
   InetAddress group;
+  private boolean isReceiveTaskRunning;
+  private boolean isSendTaskRunning;
+
+  private UDPComMulticast() {}
+
+  public static UDPComMulticast getInstance() {
+    return INSTANCE;
+  }
 
   public boolean coonect(String MultiAddres,
                            int sendPort,
@@ -23,17 +32,21 @@ public class UDPComMulticast {
                            byte[] sendData,
                            int receivedDataSize) {
     try {
-      socket = new MulticastSocket(receivePort);
-      group = InetAddress.getByName(MultiAddres);
-      socket.joinGroup(group);
-      socket.setLoopbackMode(false);
+      if(socket == null) {
+        socket = new MulticastSocket(receivePort);
+        group = InetAddress.getByName(MultiAddres);
+        socket.joinGroup(group);
+        socket.setLoopbackMode(false);
+      }
       System.out.println("非同期受信タスク開始");
+      isReceiveTaskRunning = true;
       new Thread(new Runnable() {
         public void run() {
           startReceiveTask(receivedDataSize);
         }
       }).start();
       System.out.println("非同期送信タスク開始");
+      isSendTaskRunning = true;
       new Thread(new Runnable() {
         public void run() {
           startSendTask(sendData, sendPort);
@@ -48,18 +61,38 @@ public class UDPComMulticast {
 
   private void startReceiveTask(int dataSize) {
     byte[] receivedData = new byte[dataSize];
-    while (true) {
+    while (isReceiveTaskRunning) {
       receive(receivedData);
     }
   }
 
   private void startSendTask(byte[] sendData, int port) {
-    while (true) {
+    while (isSendTaskRunning) {
       try {
         send(sendData, port);
         Thread.sleep(SCHEDULED_SEND_SLEEP_TIME);
       } catch (InterruptedException e) {}
     }
+  }
+
+  public void discoonect() {
+    stopReceiveTask();
+
+    stopSendTask();
+  }
+
+  private void stopReceiveTask() {
+    while (isReceiveTaskRunning) {
+      isReceiveTaskRunning = false;
+    }
+    System.out.println("非同期受信タスク停止");
+  }
+
+  private void stopSendTask() {
+    while (isSendTaskRunning) {
+      isSendTaskRunning = false;
+    }
+    System.out.println("非同期送信タスク停止");
   }
 
   private boolean receive(byte[] data) {

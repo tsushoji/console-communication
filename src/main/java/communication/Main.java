@@ -10,41 +10,55 @@ import communication.udp.UDPComMulticast;
 
 public class Main {
 
+  private static Scanner scan;
+
   public static void main(String[] args) {
     ResourceBundle rb = ResourceBundle.getBundle("communication");
 
-    menuDisplay();
+    scan = new Scanner(System.in);
+    boolean isLopp = false;
+    try {
+      do {
+        menuDisplay();
 
-    try (Scanner scan = new Scanner(System.in);) {
-      while (scan.hasNext()) {
         String inputMode = scan.nextLine();
-        System.out.println("-モード:" + inputMode);
-        switch(inputMode) {
-        case "0":
-          UDPComInputStr(rb.getString("udp.send.addres"),
-                           Integer.parseInt(rb.getString("udp.send.port")),
-                           Integer.parseInt(rb.getString("udp.receive.port")),
-                           1024);
-          break;
+        if(!inputMode.isEmpty()) {
+          System.out.println("-モード:" + inputMode);
+          switch(inputMode) {
+          case "0":
+            UDPComInputStr(rb.getString("udp.send.addres"),
+                             Integer.parseInt(rb.getString("udp.send.port")),
+                             Integer.parseInt(rb.getString("udp.receive.port")),
+                             1024);
+            isLopp = true;
+            break;
 
-        case "1":
-          UDPComMulticastInputStr(rb.getString("udp.multicast.addres"),
-                                      Integer.parseInt(rb.getString("udp.multicast.send.port")),
-                                      Integer.parseInt(rb.getString("udp.multicast.receive.port")),
-                                      1024);
-          break;
+          case "1":
+            UDPComMulticastInputStr(rb.getString("udp.multicast.addres"),
+                                        Integer.parseInt(rb.getString("udp.multicast.send.port")),
+                                        Integer.parseInt(rb.getString("udp.multicast.receive.port")),
+                                        1024);
+            isLopp = true;
+            break;
 
-        case "e":
-          System.out.println("終了いたします");
-          throw new Exception();
+          case "e":
+            System.out.println("終了いたします");
+            isLopp = false;
+            break;
 
-        default:
-          System.out.println("通信タイプ対象外");
-          System.out.println("再度、操作したいモードを選んでください:");
-          break;
+          default:
+            System.out.println("通信タイプ対象外");
+            System.out.println("再度、操作したいモードを選んでください:");
+            isLopp = true;
+            break;
+          }
         }
-      }
-    } catch (Exception e) {}
+      }while(isLopp);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }finally {
+      scan.close();
+    }
   }
 
   private static void menuDisplay() {
@@ -62,20 +76,23 @@ public class Main {
                                         int sendPort,
                                         int receivedPort,
                                         int receivedDataSize) {
-    UDPCom com = new UDPCom();
-    com.coonect(receivedPort, receivedDataSize);
+    UDPCom.getInstance().coonect(receivedPort, receivedDataSize);
     int inputStrCount = 1;
-    try (Scanner scan = new Scanner(System.in);) {
+    try {
       while (scan.hasNext()) {
         String inputStr = scan.nextLine();
+        if(inputStr.equals("#q")) {
+          break;
+        }
         System.out.println(inputStrCount++ + "-UDP通信送信文字列:" + inputStr);
-        com.send(IPAddres, sendPort, inputStr.getBytes("UTF-8"));
+        UDPCom.getInstance().send(IPAddres, sendPort, inputStr.getBytes("UTF-8"));
         if(inputStr.matches("[+-]?\\d*(\\.\\d+)?")) {
-          com.send(IPAddres,
+          UDPCom.getInstance().send(IPAddres,
               sendPort,
               ByteBuffer.wrap(new byte[4]).putInt(Integer.parseInt(inputStr)).array());
         }
       }
+      UDPCom.getInstance().discoonect();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -85,15 +102,29 @@ public class Main {
                                                  int sendPort,
                                                  int receivePort,
                                                  int receivedDataSize) {
-    try (Scanner scan = new Scanner(System.in);){
+    try {
       String inputStr = scan.nextLine();
       System.out.println("-定周期UDP通信送信文字列:" + inputStr);
-      UDPComMulticast com = new UDPComMulticast();
       byte[] sendData = inputStr.getBytes("UTF-8");
       if(inputStr.matches("[+-]?\\d*(\\.\\d+)?")) {
         sendData = ByteBuffer.wrap(new byte[4]).putInt(Integer.parseInt(inputStr)).array();
       }
-      com.coonect(MulticastAddres, sendPort, receivePort, sendData, receivedDataSize);
+      UDPComMulticast.getInstance().coonect(MulticastAddres, sendPort, receivePort, sendData, receivedDataSize);
+      int inputStrCount = 1;
+      while (scan.hasNext()) {
+        inputStr = scan.nextLine();
+        if(inputStr.equals("#q")) {
+          break;
+        }
+        System.out.println(inputStrCount++ + "-UDP通信送信文字列:" + inputStr);
+        UDPComMulticast.getInstance().send(inputStr.getBytes("UTF-8"), sendPort);
+        if(inputStr.matches("[+-]?\\d*(\\.\\d+)?")) {
+          UDPComMulticast.getInstance().send(
+              ByteBuffer.wrap(new byte[4]).putInt(Integer.parseInt(inputStr)).array(),
+              sendPort);
+        }
+      }
+      UDPComMulticast.getInstance().discoonect();
     } catch(Exception e) {
       e.printStackTrace();
     }
