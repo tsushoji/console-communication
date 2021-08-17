@@ -11,11 +11,21 @@ import communication.Console;
 public class UDPCom {
 
   private static final int MAX_RECEIVED_DATA_SIZE = 1024;
+  private static final UDPCom INSTANCE = new UDPCom();
   private static int receiveCount = 1;
   private static int sendCount = 1;
+  private DatagramSocket socket;
+  private boolean isReceiveTaskRunning;
+
+  private UDPCom() {}
+
+  public static UDPCom getInstance() {
+    return INSTANCE;
+  }
 
   public void coonect(int port, int dataSize) {
     System.out.println("非同期受信タスク開始");
+    isReceiveTaskRunning = true;
     new Thread(new Runnable() {
       public void run() {
         startReceiveTask(port, dataSize);
@@ -24,13 +34,27 @@ public class UDPCom {
   }
 
   private void startReceiveTask(int port, int dataSize) {
-    while (true) {
+    while (isReceiveTaskRunning) {
       receive(port, dataSize);
     }
   }
 
+  public void discoonect() {
+    stopReceiveTask();
+  }
+
+  private void stopReceiveTask() {
+    while (isReceiveTaskRunning) {
+      isReceiveTaskRunning = false;
+    }
+    System.out.println("非同期受信タスク停止");
+  }
+
   private boolean receive(int port, int dataSize) {
-    try (DatagramSocket socket = new DatagramSocket(port)) {
+    try {
+      if(socket == null) {
+        socket = new DatagramSocket(port);
+      }
       byte[] data = new byte[dataSize];
       DatagramPacket packet = new DatagramPacket(data, data.length);
       socket.receive(packet);
@@ -53,7 +77,7 @@ public class UDPCom {
   }
 
   public boolean send(String IPAddres, int port, byte[] sendData) {
-    try (DatagramSocket socket = new DatagramSocket()) {
+    try(DatagramSocket socket = new DatagramSocket()) {
       DatagramPacket packet = new DatagramPacket(sendData,
                                                   sendData.length,
                                                   new InetSocketAddress(IPAddres, port));

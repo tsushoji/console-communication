@@ -32,5 +32,3 @@ bin
 *.swp
 *.bak
 
-# 通信設定
-/src/main/resources/communication.properties
