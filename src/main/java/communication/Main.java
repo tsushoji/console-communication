@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 
+import communication.tcp.Server;
+import communication.tcp.ServerListener;
 import communication.udp.UDPCom;
 import communication.udp.UDPComMulticast;
 
@@ -18,6 +20,7 @@ public class Main {
 
     scan = new Scanner(System.in);
     boolean isLopp = false;
+    Server server = null;
     try {
       do {
         menuDisplay();
@@ -39,6 +42,21 @@ public class Main {
                                         Integer.parseInt(rb.getString("udp.multicast.send.port")),
                                         Integer.parseInt(rb.getString("udp.multicast.receive.port")),
                                         1024);
+            isLopp = true;
+            break;
+
+          case "2c":
+            server = new Server();
+            server.coonect(rb.getString("tcp.server.addres"),
+                           Integer.parseInt(rb.getString("tcp.server.port")));
+            server.respond(new ServerListener(), 4, 256);
+            isLopp = true;
+            break;
+
+          case "2s":
+            if(server != null && server.isConnected()) {
+              server.stop();
+            }
             isLopp = true;
             break;
 
