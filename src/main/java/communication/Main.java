@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 
+import communication.tcp.Client;
 import communication.tcp.Server;
 import communication.tcp.ServerListener;
 import communication.udp.UDPCom;
@@ -45,17 +46,18 @@ public class Main {
             isLopp = true;
             break;
 
-          case "2c":
+          case "2":
             server = new Server();
-            server.coonect(rb.getString("tcp.server.addres"),
-                           Integer.parseInt(rb.getString("tcp.server.port")));
+            server.connect(Integer.parseInt(rb.getString("tcp.server.port")));
+            // TCP-S-①
             server.respond(new ServerListener(), 4, 256);
             isLopp = true;
             break;
 
-          case "2s":
-            if(server != null && server.isConnected()) {
-              server.stop();
+          case "3":
+            if(server == null) {
+              TCPClientInputStr(rb.getString("tcp.client.addres"),
+                                   Integer.parseInt(rb.getString("tcp.client.port")));
             }
             isLopp = true;
             break;
@@ -84,6 +86,8 @@ public class Main {
     Map<String, String> operationMenuMap = new LinkedHashMap<>();
     operationMenuMap.put("0", "UDP通信ユニキャスト");
     operationMenuMap.put("1", "UDP通信マルチキャスト定時送信あり");
+    operationMenuMap.put("2", "TCP通信サーバーリッスン開始");
+    operationMenuMap.put("3", "TCP通信クライアント送信");
     operationMenuMap.put("e", "終了");
 
     System.out.println("操作したいモードを選んでください:");
@@ -149,5 +153,35 @@ public class Main {
       e.printStackTrace();
     }
 
+  }
+
+  private static void TCPClientInputStr(String IPAddres, int sendPort) {
+    Client client = new Client();
+    client.connect(IPAddres, sendPort);
+    int inputStrCount = 1;
+    try {
+      while (scan.hasNext()) {
+        String inputStr = scan.nextLine();
+        if(inputStr.equals("#q")) {
+          break;
+        }
+        System.out.println(inputStrCount++ + "-TCP通信クライアント送信文字列:" + inputStr);
+
+        // TCP-C-①
+        if(inputStr.matches("[+-]?\\d*(\\.\\d+)?")) {
+          // TCP-C-➁
+          byte[] body = client.request(ByteBuffer.wrap(new byte[4]).putInt(Integer.parseInt(inputStr)).array(), 256);
+          int dataCount = 0;
+          for(byte data : body) {
+            System.out.println(++dataCount + ":" + String.valueOf(data).toString());
+          }
+        }else {
+          System.out.println("数字を入力してください");
+        }
+      }
+      client.stop();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }

@@ -11,7 +11,7 @@ public class Client {
   private InputStream reader;
   private OutputStream writer;
 
-  public void coonect(String ip, int port) {
+  public void connect(String ip, int port) {
     try {
       // クライアント側ソケット作成
       socket = new Socket(ip, port);
@@ -22,12 +22,13 @@ public class Client {
     }
   }
 
-  public byte[] request(byte[] code) {
-    byte[] body = null;
+  public byte[] request(byte[] code, int bodySize) {
+    byte[] body = new byte[bodySize];
     try {
       System.out.println("サーバーへ送信開始");
       // サーバーへ送信
       writer.write(code);
+      System.out.println("サーバーへ送信終了");
       // サーバーからのデータ受信
       reader.read(body);
     }catch(Exception e) {
