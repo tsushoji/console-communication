@@ -38,6 +38,7 @@ public class Server {
           // クライアントからのデータ受信
           byte[] codeData = new byte[codeDataSize];
           reader.read(codeData, 0, codeDataSize);
+          // TCP-S-➄
           // 終了 !!!!:555819297(ASKII)
           if (ByteBuffer.wrap(codeData).getInt() == 555819297) {
             stop();
